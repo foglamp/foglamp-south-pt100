@@ -1,6 +1,6 @@
 import math
 import RPi.GPIO as GPIO
-import asyncio
+import time
 
 class max31865(object):
     """Reading Temperature from the MAX31865 with GPIO using
@@ -30,7 +30,7 @@ class max31865(object):
         GPIO.output(self.clkPin, GPIO.LOW)
         GPIO.output(self.mosiPin, GPIO.LOW)
 
-    async def readTemp(self):
+    def readTemp(self):
         #
         # b10000000 = 0x80
         # 0x8x to specify 'write register value'
@@ -55,7 +55,7 @@ class max31865(object):
         self.writeRegister(0, 0xB2)
 
         # conversion time is less than 100ms
-        asyncio.sleep(.1) #give it 100ms for conversion
+        time.sleep(.1) #give it 100ms for conversion
 
         # read all registers
         out = self.readRegisters(0,8)

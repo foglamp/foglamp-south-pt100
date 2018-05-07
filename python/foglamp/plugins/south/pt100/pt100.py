@@ -79,7 +79,8 @@ def plugin_init(config):
     for pin in pins:
         probes.append(max31865(csPin=int(pin)))
     _LOGGER.info('PT100 - MAX31865 with chip selects on pins {} initialized'.format(config['pins']['value']))
-    return probes
+    data['probes'] = probes
+    return data
 
 
 def plugin_poll(handle):
@@ -95,13 +96,13 @@ def plugin_poll(handle):
     Raises:
         DataRetrievalError
     """
-
+    probes = handle['probes']
     time_stamp = str(datetime.datetime.now(tz=datetime.timezone.utc))
     data = list()
 
     try:
-        for probe in handle:
-            temperature = await probe.readTemp()
+        for probe in probes:
+            temperature = probe.readTemp()
             time_stamp = str(datetime.datetime.now(tz=datetime.timezone.utc))
             data.append({
                 'asset': 'PT100/temperature{}'.format(probe.csPin),
