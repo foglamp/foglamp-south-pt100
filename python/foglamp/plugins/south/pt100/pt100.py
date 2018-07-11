@@ -37,7 +37,7 @@ _DEFAULT_CONFIG = {
     'pollInterval': {
         'description': 'The interval between poll calls to the South device poll routine expressed in milliseconds.',
         'type': 'integer',
-        'default': '1000'
+        'default': '5000'
     },
 }
 
