@@ -1,3 +1,18 @@
-# Package Build
-packages/Debian/build
+# vi
+*.swp
 
+# MacOS Finder
+.DS_Store
+._*
+
+# IDE
+*.idea
+
+# Build
+packages/Debian/build/
+
+# Compiled Object files
+*.pyc
+
+# Test
+.pytest_cache
