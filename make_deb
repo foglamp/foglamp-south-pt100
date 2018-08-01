@@ -22,8 +22,12 @@
 
 set -e
 
-GIT_ROOT=`pwd`    # The script must be executed from the root git directory
+if [ "$(dpkg --print-architecture)" != "armhf" ]; then
+    echo "This script is used to create the Debian package for armhf architecture only"
+    exit 1
+fi
 
+GIT_ROOT=`pwd`    # The script must be executed from the root git directory
 usage="$(basename "$0") [clean|cleanall]
 This script is used to create the Debian package of FogLAMP
 Arguments: 
@@ -124,6 +128,4 @@ echo "Building the new package..."
 dpkg-deb --build ${package_name}
 echo "Building Complete."
 
-
 exit 0
-
