@@ -25,19 +25,28 @@ __version__ = "${VERSION}"
 
 _DEFAULT_CONFIG = {
     'plugin': {
-         'description': 'PT100 Poll Plugin',
-         'type': 'string',
-         'default': 'pt100'
+        'description': 'PT100 Poll Plugin',
+        'type': 'string',
+        'default': 'pt100',
+        'readonly': 'true'
+    },
+    'assetNamePrefix': {
+        'description': 'Asset prefix',
+        'type': 'string',
+        'default': "PT100",
+        'order': "1"
     },
     'pins': {
         'description': 'Chip select pins to check',
         'type': 'string',
-        'default': '8'
+        'default': '8',
+        'order': "3"
     },
     'pollInterval': {
         'description': 'The interval between poll calls to the South device poll routine expressed in milliseconds.',
         'type': 'integer',
-        'default': '5000'
+        'default': '5000',
+        'order': "2"
     },
 }
 
@@ -105,14 +114,14 @@ def plugin_poll(handle):
             temperature = probe.readTemp()
             time_stamp = str(datetime.datetime.now(tz=datetime.timezone.utc))
             data.append({
-                'asset': 'PT100/temperature{}'.format(probe.csPin),
-                'timestamp': time_stamp,
+                'asset': '{}/temperature{}'.format(handle['assetNamePrefix']['value'], probe.csPin),
+                'timestamp': utils.local_timestamp(),
                 'key': str(uuid.uuid4()),
                 'readings': {
                     "temperature": temperature
                 }
             })
-    except (Exception, RuntimeError, pexpect.exceptions.TIMEOUT) as ex:
+    except (Exception, RuntimeError) as ex:
         _LOGGER.exception("PT100 exception: {}".format(str(ex)))
         raise exceptions.DataRetrievalError(ex)
 
@@ -140,10 +149,11 @@ def plugin_reconfigure(handle, new_config):
 
     # Plugin should re-initialize and restart if key configuration is changed
     if 'pollInterval' in diff:
-        new_handle = copy.deepcopy(new_config)
-        new_handle['restart'] = 'no'
+        plugin_shutdown(handle)
+        new_handle = plugin_init(new_config)
+        new_handle['restart'] = 'yes'
     else:
-        new_handle = copy.deepcopy(handle)
+        new_handle = copy.deepcopy(new_config)
         new_handle['restart'] = 'no'
     return new_handle
 
