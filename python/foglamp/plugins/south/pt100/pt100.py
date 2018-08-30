@@ -112,7 +112,6 @@ def plugin_poll(handle):
     try:
         for probe in probes:
             temperature = probe.readTemp()
-            time_stamp = str(datetime.datetime.now(tz=datetime.timezone.utc))
             data.append({
                 'asset': '{}temperature{}'.format(handle['assetNamePrefix']['value'], probe.csPin),
                 'timestamp': utils.local_timestamp(),
@@ -148,18 +147,6 @@ def plugin_reconfigure(handle, new_config):
     return new_handle
 
 
-def _plugin_stop(handle):
-    """ Stops the plugin doing required cleanup, to be called prior to the South device service being shut down.
-
-    Args:
-        handle: handle returned by the plugin initialisation call
-    Returns:
-    Raises:
-    """
-    GPIO.cleanup()
-    _LOGGER.info('PT100 poll plugin stop.')
-
-
 def plugin_shutdown(handle):
     """ Shutdowns the plugin doing required cleanup, to be called prior to the South device service being shut down.
 
@@ -168,5 +155,5 @@ def plugin_shutdown(handle):
     Returns:
     Raises:
     """
-    _plugin_stop(handle)
+    GPIO.cleanup()
     _LOGGER.info('PT100 poll plugin shut down.')
