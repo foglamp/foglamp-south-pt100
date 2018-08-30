@@ -31,11 +31,5 @@ set_files_ownership () {
     chown -R root:root /usr/local/foglamp/python/foglamp/plugins/south/pt100
 }
 
-add_service () {
-    output=$(curl -sX POST http://localhost:8081/foglamp/service -d '{"name": "pt100", "type": "south", "plugin": "pt100", "enabled": true}')
-    echo $output
-}
-
 set_files_ownership
-add_service
 echo "PT100 plugin is now installed."

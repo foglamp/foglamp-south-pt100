@@ -25,19 +25,28 @@ __version__ = "${VERSION}"
 
 _DEFAULT_CONFIG = {
     'plugin': {
-         'description': 'PT100 Poll Plugin',
-         'type': 'string',
-         'default': 'pt100'
+        'description': 'PT100 Poll Plugin',
+        'type': 'string',
+        'default': 'pt100',
+        'readonly': 'true'
+    },
+    'assetNamePrefix': {
+        'description': 'Asset prefix',
+        'type': 'string',
+        'default': "PT100/",
+        'order': "1"
     },
     'pins': {
         'description': 'Chip select pins to check',
         'type': 'string',
-        'default': '8'
+        'default': '8',
+        'order': "3"
     },
     'pollInterval': {
         'description': 'The interval between poll calls to the South device poll routine expressed in milliseconds.',
         'type': 'integer',
-        'default': '5000'
+        'default': '5000',
+        'order': "2"
     },
 }
 
@@ -103,16 +112,15 @@ def plugin_poll(handle):
     try:
         for probe in probes:
             temperature = probe.readTemp()
-            time_stamp = str(datetime.datetime.now(tz=datetime.timezone.utc))
             data.append({
-                'asset': 'PT100/temperature{}'.format(probe.csPin),
-                'timestamp': time_stamp,
+                'asset': '{}temperature{}'.format(handle['assetNamePrefix']['value'], probe.csPin),
+                'timestamp': utils.local_timestamp(),
                 'key': str(uuid.uuid4()),
                 'readings': {
                     "temperature": temperature
                 }
             })
-    except (Exception, RuntimeError, pexpect.exceptions.TIMEOUT) as ex:
+    except (Exception, RuntimeError) as ex:
         _LOGGER.exception("PT100 exception: {}".format(str(ex)))
         raise exceptions.DataRetrievalError(ex)
 
@@ -134,30 +142,9 @@ def plugin_reconfigure(handle, new_config):
     Raises:
     """
     _LOGGER.info("Old config for PT100 plugin {} \n new config {}".format(handle, new_config))
-
-    # Find diff between old config and new config
-    diff = utils.get_diff(handle, new_config)
-
-    # Plugin should re-initialize and restart if key configuration is changed
-    if 'pollInterval' in diff:
-        new_handle = copy.deepcopy(new_config)
-        new_handle['restart'] = 'no'
-    else:
-        new_handle = copy.deepcopy(handle)
-        new_handle['restart'] = 'no'
+    new_handle = copy.deepcopy(new_config)
+    new_handle['restart'] = 'no'
     return new_handle
-
-
-def _plugin_stop(handle):
-    """ Stops the plugin doing required cleanup, to be called prior to the South device service being shut down.
-
-    Args:
-        handle: handle returned by the plugin initialisation call
-    Returns:
-    Raises:
-    """
-    GPIO.cleanup()
-    _LOGGER.info('PT100 poll plugin stop.')
 
 
 def plugin_shutdown(handle):
@@ -168,5 +155,5 @@ def plugin_shutdown(handle):
     Returns:
     Raises:
     """
-    _plugin_stop(handle)
+    GPIO.cleanup()
     _LOGGER.info('PT100 poll plugin shut down.')
