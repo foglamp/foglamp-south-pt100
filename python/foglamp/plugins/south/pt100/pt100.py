@@ -33,7 +33,7 @@ _DEFAULT_CONFIG = {
     'assetNamePrefix': {
         'description': 'Asset prefix',
         'type': 'string',
-        'default': "PT100",
+        'default': "PT100/",
         'order': "1"
     },
     'pins': {
@@ -114,7 +114,7 @@ def plugin_poll(handle):
             temperature = probe.readTemp()
             time_stamp = str(datetime.datetime.now(tz=datetime.timezone.utc))
             data.append({
-                'asset': '{}/temperature{}'.format(handle['assetNamePrefix']['value'], probe.csPin),
+                'asset': '{}temperature{}'.format(handle['assetNamePrefix']['value'], probe.csPin),
                 'timestamp': utils.local_timestamp(),
                 'key': str(uuid.uuid4()),
                 'readings': {
