@@ -16,7 +16,7 @@
 ## limitations under the License.
 ##--------------------------------------------------------------------
 ##
-## Author: Ivan Zoratti
+## Author: Ivan Zoratti, Vaibhav Singhal
 ##
 
 
@@ -38,7 +38,6 @@ do
           find "${GIT_ROOT}/packages/Debian/build" -maxdepth 1 | grep '.*\.[0-9][0-9][0-9][0-9]' | xargs rm -rf
           echo "Done."
           exit 0
-          shift
           ;;
       cleanall)
           if [ -d "${GIT_ROOT}/packages/Debian/build" ]; then
@@ -49,7 +48,6 @@ do
             echo "No build folder, skipping cleanall"
           fi
           exit 0
-          shift
           ;;
       *)
           echo "${usage}"
@@ -57,6 +55,11 @@ do
           ;;
   esac
 done
+
+if [ "$(dpkg --print-architecture)" != "armhf" ]; then
+  echo "Package building is only supported on armhf architecture!!"
+  exit 0
+fi
 
 architecture="armhf"
 version=`cat ${GIT_ROOT}/VERSION.south.pt100 | tr -d ' ' | grep 'foglamp_south_pt100_version=' | head -1 | sed -e 's/\(.*\)=\(.*\)/\2/g'`
