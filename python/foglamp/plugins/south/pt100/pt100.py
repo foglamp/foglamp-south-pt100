@@ -34,19 +34,22 @@ _DEFAULT_CONFIG = {
         'description': 'Asset prefix',
         'type': 'string',
         'default': "PT100/",
-        'order': "1"
+        'order': "1",
+        'displayName': 'Asset Name Prefix'
     },
     'pins': {
         'description': 'Chip select pins to check',
         'type': 'string',
         'default': '8',
-        'order': "3"
+        'order': "3",
+        'displayName': 'GPIO Pin'
     },
     'pollInterval': {
         'description': 'The interval between poll calls to the South device poll routine expressed in milliseconds.',
         'type': 'integer',
         'default': '5000',
-        'order': "2"
+        'order': "2",
+        'displayName': 'Poll Interval'
     },
 }
 
