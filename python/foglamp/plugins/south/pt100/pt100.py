@@ -10,6 +10,7 @@ import copy
 import datetime
 import json
 import uuid
+import logging
 import RPi.GPIO as GPIO
 
 from foglamp.plugins.south.pt100.max31865 import *
@@ -34,23 +35,26 @@ _DEFAULT_CONFIG = {
         'description': 'Asset prefix',
         'type': 'string',
         'default': "PT100/",
-        'order': "1"
+        'order': "1",
+        'displayName': 'Asset Name Prefix'
     },
     'pins': {
         'description': 'Chip select pins to check',
         'type': 'string',
         'default': '8',
-        'order': "3"
+        'order': "3",
+        'displayName': 'GPIO Pin'
     },
     'pollInterval': {
-        'description': 'The interval between poll calls to the South device poll routine expressed in milliseconds.',
+        'description': 'The interval between poll calls, expressed in milliseconds.',
         'type': 'integer',
         'default': '5000',
-        'order': "2"
+        'order': "2",
+        'displayName': 'Poll Interval'
     },
 }
 
-_LOGGER = logger.setup(__name__, level=20)
+_LOGGER = logger.setup(__name__, level=logging.INFO)
 
 
 def plugin_info():
