@@ -20,7 +20,7 @@ from foglamp.services.south import exceptions
 
 
 __author__ = "Ashwin Gopalakrishnan"
-__copyright__ = "Copyright (c) 2018 OSIsoft, LLC"
+__copyright__ = "Copyright (c) 2018 Dianomic Systems"
 __license__ = "Apache 2.0"
 __version__ = "${VERSION}"
 
@@ -44,14 +44,7 @@ _DEFAULT_CONFIG = {
         'default': '8',
         'order': "3",
         'displayName': 'GPIO Pin'
-    },
-    'pollInterval': {
-        'description': 'The interval between poll calls, expressed in milliseconds.',
-        'type': 'integer',
-        'default': '5000',
-        'order': "2",
-        'displayName': 'Poll Interval'
-    },
+    }
 }
 
 _LOGGER = logger.setup(__name__, level=logging.INFO)
@@ -80,7 +73,7 @@ def plugin_init(config):
     """ Initialise the plugin.
 
     Args:
-        config: JSON configuration document for the South device configuration category
+        config: JSON configuration document for the South plugin configuration category
     Returns:
         handle: JSON object to be used in future calls to the plugin
     Raises:
@@ -110,7 +103,6 @@ def plugin_poll(handle):
         DataRetrievalError
     """
     probes = handle['probes']
-    time_stamp = str(datetime.datetime.now(tz=datetime.timezone.utc))
     data = list()
 
     try:
@@ -135,7 +127,7 @@ def plugin_poll(handle):
 def plugin_reconfigure(handle, new_config):
     """  Reconfigures the plugin
 
-    it should be called when the configuration of the plugin is changed during the operation of the South device service;
+    it should be called when the configuration of the plugin is changed during the operation of the South service;
     The new configuration category should be passed.
 
     Args:
@@ -147,12 +139,11 @@ def plugin_reconfigure(handle, new_config):
     """
     _LOGGER.info("Old config for PT100 plugin {} \n new config {}".format(handle, new_config))
     new_handle = copy.deepcopy(new_config)
-    new_handle['restart'] = 'no'
     return new_handle
 
 
 def plugin_shutdown(handle):
-    """ Shutdowns the plugin doing required cleanup, to be called prior to the South device service being shut down.
+    """ Shutdowns the plugin doing required cleanup, to be called prior to the South service being shut down.
 
     Args:
         handle: handle returned by the plugin initialisation call
