@@ -10,6 +10,7 @@ import copy
 import datetime
 import json
 import uuid
+import logging
 import RPi.GPIO as GPIO
 
 from foglamp.plugins.south.pt100.max31865 import *
@@ -19,29 +20,34 @@ from foglamp.services.south import exceptions
 
 
 __author__ = "Ashwin Gopalakrishnan"
-__copyright__ = "Copyright (c) 2018 OSIsoft, LLC"
+__copyright__ = "Copyright (c) 2018 Dianomic Systems"
 __license__ = "Apache 2.0"
 __version__ = "${VERSION}"
 
 _DEFAULT_CONFIG = {
     'plugin': {
-         'description': 'PT100 Poll Plugin',
-         'type': 'string',
-         'default': 'pt100'
+        'description': 'PT100 Poll Plugin',
+        'type': 'string',
+        'default': 'pt100',
+        'readonly': 'true'
+    },
+    'assetNamePrefix': {
+        'description': 'Asset prefix',
+        'type': 'string',
+        'default': "PT100/",
+        'order': "1",
+        'displayName': 'Asset Name Prefix'
     },
     'pins': {
         'description': 'Chip select pins to check',
         'type': 'string',
-        'default': '8'
-    },
-    'pollInterval': {
-        'description': 'The interval between poll calls to the South device poll routine expressed in milliseconds.',
-        'type': 'integer',
-        'default': '5000'
-    },
+        'default': '8',
+        'order': "3",
+        'displayName': 'GPIO Pin'
+    }
 }
 
-_LOGGER = logger.setup(__name__, level=20)
+_LOGGER = logger.setup(__name__, level=logging.INFO)
 
 
 def plugin_info():
@@ -55,7 +61,7 @@ def plugin_info():
 
     return {
         'name': 'PT100 Poll Plugin',
-        'version': '1.0',
+        'version': '1.5.0',
         'mode': 'poll',
         'type': 'south',
         'interface': '1.0',
@@ -67,7 +73,7 @@ def plugin_init(config):
     """ Initialise the plugin.
 
     Args:
-        config: JSON configuration document for the South device configuration category
+        config: JSON configuration document for the South plugin configuration category
     Returns:
         handle: JSON object to be used in future calls to the plugin
     Raises:
@@ -97,22 +103,20 @@ def plugin_poll(handle):
         DataRetrievalError
     """
     probes = handle['probes']
-    time_stamp = str(datetime.datetime.now(tz=datetime.timezone.utc))
     data = list()
 
     try:
         for probe in probes:
             temperature = probe.readTemp()
-            time_stamp = str(datetime.datetime.now(tz=datetime.timezone.utc))
             data.append({
-                'asset': 'PT100/temperature{}'.format(probe.csPin),
-                'timestamp': time_stamp,
+                'asset': '{}temperature{}'.format(handle['assetNamePrefix']['value'], probe.csPin),
+                'timestamp': utils.local_timestamp(),
                 'key': str(uuid.uuid4()),
                 'readings': {
                     "temperature": temperature
                 }
             })
-    except (Exception, RuntimeError, pexpect.exceptions.TIMEOUT) as ex:
+    except (Exception, RuntimeError) as ex:
         _LOGGER.exception("PT100 exception: {}".format(str(ex)))
         raise exceptions.DataRetrievalError(ex)
 
@@ -123,7 +127,7 @@ def plugin_poll(handle):
 def plugin_reconfigure(handle, new_config):
     """  Reconfigures the plugin
 
-    it should be called when the configuration of the plugin is changed during the operation of the South device service;
+    it should be called when the configuration of the plugin is changed during the operation of the South service;
     The new configuration category should be passed.
 
     Args:
@@ -134,22 +138,12 @@ def plugin_reconfigure(handle, new_config):
     Raises:
     """
     _LOGGER.info("Old config for PT100 plugin {} \n new config {}".format(handle, new_config))
-
-    # Find diff between old config and new config
-    diff = utils.get_diff(handle, new_config)
-
-    # Plugin should re-initialize and restart if key configuration is changed
-    if 'pollInterval' in diff:
-        new_handle = copy.deepcopy(new_config)
-        new_handle['restart'] = 'no'
-    else:
-        new_handle = copy.deepcopy(handle)
-        new_handle['restart'] = 'no'
+    new_handle = copy.deepcopy(new_config)
     return new_handle
 
 
-def _plugin_stop(handle):
-    """ Stops the plugin doing required cleanup, to be called prior to the South device service being shut down.
+def plugin_shutdown(handle):
+    """ Shutdowns the plugin doing required cleanup, to be called prior to the South service being shut down.
 
     Args:
         handle: handle returned by the plugin initialisation call
@@ -157,16 +151,4 @@ def _plugin_stop(handle):
     Raises:
     """
     GPIO.cleanup()
-    _LOGGER.info('PT100 poll plugin stop.')
-
-
-def plugin_shutdown(handle):
-    """ Shutdowns the plugin doing required cleanup, to be called prior to the South device service being shut down.
-
-    Args:
-        handle: handle returned by the plugin initialisation call
-    Returns:
-    Raises:
-    """
-    _plugin_stop(handle)
     _LOGGER.info('PT100 poll plugin shut down.')

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##--------------------------------------------------------------------
-## Copyright (c) 2018 OSIsoft, LLC
+## Copyright (c) 2018 Dianomic Systems
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 ## limitations under the License.
 ##--------------------------------------------------------------------
 ##
-## Author: Ivan Zoratti
+## Author: Ivan Zoratti, Vaibhav Singhal
 ##
 
 
@@ -35,21 +35,19 @@ do
   case "$i" in
       clean)
           echo -n "Cleaning the build folder from older versions..."
-          find "${GIT_ROOT}/packages/Debian/build" -maxdepth 1 | grep '.*\.[0-9][0-9][0-9][0-9]' | xargs rm -rf
+          find "${GIT_ROOT}/packages/build" -maxdepth 1 | grep '.*\.[0-9][0-9][0-9][0-9]' | xargs rm -rf
           echo "Done."
           exit 0
-          shift
           ;;
       cleanall)
-          if [ -d "${GIT_ROOT}/packages/Debian/build" ]; then
+          if [ -d "${GIT_ROOT}/packages/build" ]; then
             echo -n "Cleaning the build folder..."
-            rm -rf ${GIT_ROOT}/packages/Debian/build/*
+            rm -rf ${GIT_ROOT}/packages/build/*
             echo "Done."
           else
             echo "No build folder, skipping cleanall"
           fi
           exit 0
-          shift
           ;;
       *)
           echo "${usage}"
@@ -58,10 +56,15 @@ do
   esac
 done
 
+if [ "$(dpkg --print-architecture)" != "armhf" ]; then
+  echo "Package building is only supported on armhf architecture!!"
+  exit 0
+fi
+
 architecture="armhf"
 version=`cat ${GIT_ROOT}/VERSION.south.pt100 | tr -d ' ' | grep 'foglamp_south_pt100_version=' | head -1 | sed -e 's/\(.*\)=\(.*\)/\2/g'`
 foglamp_version=`cat ${GIT_ROOT}/VERSION.south.pt100 | tr -d ' ' | grep 'foglamp_version' | head -1 | sed -e 's/\(.*\)version\(.*\)/\2/g'`
-BUILD_ROOT="${GIT_ROOT}/packages/Debian/build"
+BUILD_ROOT="${GIT_ROOT}/packages/build"
 
 # Final package name
 package_name="foglamp-south-pt100-${version}-${architecture}"
