@@ -7,7 +7,6 @@
 """ Module for PT100 'poll' type plugin """
 
 import copy
-import datetime
 import json
 import uuid
 import logging
@@ -16,7 +15,6 @@ import RPi.GPIO as GPIO
 from foglamp.plugins.south.pt100.max31865 import *
 from foglamp.common import logger
 from foglamp.plugins.common import utils
-from foglamp.services.south import exceptions
 
 
 __author__ = "Ashwin Gopalakrishnan"
@@ -100,7 +98,7 @@ def plugin_poll(handle):
         returns a sensor reading in a JSON document, as a Python dict, if it is available
         None - If no reading is available
     Raises:
-        DataRetrievalError
+        Exception
     """
     probes = handle['probes']
     data = list()
@@ -118,10 +116,10 @@ def plugin_poll(handle):
             })
     except (Exception, RuntimeError) as ex:
         _LOGGER.exception("PT100 exception: {}".format(str(ex)))
-        raise exceptions.DataRetrievalError(ex)
-
-    _LOGGER.debug("PT100 reading: {}".format(json.dumps(data)))
-    return data
+        raise ex
+    else:
+        _LOGGER.debug("PT100 reading: {}".format(json.dumps(data)))
+        return data
 
 
 def plugin_reconfigure(handle, new_config):
