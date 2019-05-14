@@ -1,0 +1,32 @@
+# A set of variables that define how we package this repository
+#
+plugin_name=pt100
+plugin_type=south
+plugin_install_dirname=${plugin_name}
+
+# Now build up the runtime requirements list. This has 3 components
+#   1. Generic packages we depend on in all architectures and package managers
+#   2. Architecture specific packages we depend on
+#   3. Package manager specific packages we depend on
+requirements="foglamp,python3-rpi.gpio"
+
+case "$arch" in
+	x86_64)
+		;;
+	armhf)
+		;;
+	aarch64)
+		;;
+esac
+case "$package_manager" in
+	deb)
+	    if [ "$arch" != "armhf" ]; then
+            echo "Deb Package building for ${plugin_name} is only supported on armhf architecture!!"
+            exit 0
+        fi
+        ;;
+	rpm)
+	    echo "RPM Package building for ${plugin_name} is not supported on $arch architecture!!"
+	    exit 0
+	    ;;
+esac
