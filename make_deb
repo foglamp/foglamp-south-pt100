@@ -56,12 +56,18 @@ do
   esac
 done
 
-if [ "$(dpkg --print-architecture)" != "armhf" ]; then
-  echo "Package building is only supported on armhf architecture!!"
-  exit 0
-fi
+architecture="$(dpkg --print-architecture)"
+case "${architecture}" in
+	armhf)
+		;;
+	arm64)
+		;;
+	*)
+		echo "Package building is only supported on arm architectures!!"
+		exit 0
+		;;
+esac
 
-architecture="armhf"
 version=`cat ${GIT_ROOT}/VERSION.south.pt100 | tr -d ' ' | grep 'foglamp_south_pt100_version=' | head -1 | sed -e 's/\(.*\)=\(.*\)/\2/g'`
 foglamp_version=`cat ${GIT_ROOT}/VERSION.south.pt100 | tr -d ' ' | grep 'foglamp_version' | head -1 | sed -e 's/\(.*\)version\(.*\)/\2/g'`
 BUILD_ROOT="${GIT_ROOT}/packages/build"
