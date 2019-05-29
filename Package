@@ -12,21 +12,19 @@ requirements="foglamp,python3-rpi.gpio"
 
 case "$arch" in
 	x86_64)
-		;;
-	armhf)
-		;;
+	        echo "${plugin_name} is not supported on Intel architectures as it requires ARM GPIO support"
+	        exit 1
+	        ;;
+	armv7l)
+                ;;
 	aarch64)
-		;;
+                ;;
 esac
 case "$package_manager" in
-	deb)
-	    if [ "$arch" != "armhf" ]; then
-            echo "Deb Package building for ${plugin_name} is only supported on armhf architecture!!"
-            exit 0
-        fi
+    deb)
         ;;
-	rpm)
-	    echo "RPM Package building for ${plugin_name} is not supported on $arch architecture!!"
-	    exit 0
-	    ;;
+    rpm)
+        echo "RPM Package building for ${plugin_name} is not supported on $arch architecture!!"
+        exit 0
+        ;;
 esac
