@@ -1,8 +1,8 @@
 ===================
-foglamp-south-pt100
+fledge-south-pt100
 ===================
 
-FogLAMP South Plugin for Raspberry PI PT100
+Fledge South Plugin for Raspberry PI PT100
 
 Installation
 ------------
